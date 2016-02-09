@@ -7,6 +7,9 @@ from collections.abc import Iterable
 from nose.tools import assert_equal, assert_raises
 from nicer_tests import Test, data_driven_test
 
+# Warnings need to trigger always
+warnings.simplefilter("always")
+
 
 class TestDataDriven(Test):
     """nicer_tests.data_driven_test
