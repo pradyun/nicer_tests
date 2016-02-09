@@ -14,11 +14,10 @@ from nose.tools import nottest, assert_in, assert_not_in
 
 __all__ = ["Test", "mock", "runmodule", "data_driven_test"]
 
-# =============================================================================
-# BE VERY CAREFUL HERE. Changes here are capable of breaking all tests...
-# =============================================================================
-
-# MARK:: Bad!!! We monkey-patch spec to show nice-output.
+# -----------------------------------------------------------------------------
+# Monkey-patch spec to show nice-output.
+# -----------------------------------------------------------------------------
+# MARK:: Really horrible hacky stuff!!!
 try:
     import spec.plugin
 except ImportError:
@@ -38,9 +37,8 @@ else:
 
 
 # -----------------------------------------------------------------------------
-# Base-class for all Test classes.
-#    Implements extras for checking names of tests, adding descriptions from
-#    docstring and (BIG) loading from string, sourced from YAML files.
+# Implements extras for checking names of tests, adding descriptions from
+# docstring and (BIG) loading from string, sourced from YAML files.
 # -----------------------------------------------------------------------------
 class Test(object):
     """Base class for all tests
@@ -52,6 +50,7 @@ class Test(object):
 
     context = None
 
+    # MARK:: Untested method
     def __init__(self):
         super().__init__()
 
@@ -66,6 +65,7 @@ class Test(object):
             traceback.print_stack(inspect.currentframe(), 2)
             warnings.warn("Test subclasses' name should start with 'Test'")
 
+    # MARK:: Untested method
     def _process_test_function(self, name, function):
         # Set a description if not already set, using the doc-string if it's there
         if not (function.__doc__ is None or hasattr(function, "description")):
@@ -88,12 +88,14 @@ class Test(object):
         """
         raise AssertionError(message) from cause
 
+    # -------------------------------------------------------------------------
     # Helpers for data-driven testing
+    #     NOTE:: Should this be moved to the data-driven section?
+    # -------------------------------------------------------------------------
+    # MARK:: Untested method
     def load(self, value, context=None):
         """Load data in given context
         """
-        # NOTE:: Folks at python-ideas are working on a nicer version for this...
-        #        Keep track.
         if context is None:
             context = self.context if self.context is not None else {}
 
@@ -126,7 +128,7 @@ class Test(object):
 
         return func(value, context)
 
-    # TODO:: Add tests for this!
+    # MARK:: Untested method
     def template_valid_invalid(self, valid_func, invalid_func, *, error=None, **kwargs):
         if error is None:
             if valid_func is not None:
@@ -194,6 +196,7 @@ def data_driven_test(test_data_or_file, *, prefix="", suffix=""):
 # -----------------------------------------------------------------------------
 # Running tests directly from a module
 # -----------------------------------------------------------------------------
+# MARK:: Untested Function
 def runmodule(capture=True):
     """A convenience function for running tests in test modules
     """
