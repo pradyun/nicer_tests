@@ -1,4 +1,11 @@
 """Testing Helper Routines
+
+ - Monkey patching of spec for nicer output
+ - Basic checking of names of Test classes
+ - Predictable descriptions of methods
+ - Support for data-driven testing with YAML files
+   - Loading data (in a sandbox) from a data-structure (coming from YAML source)
+
 """
 
 import inspect
@@ -41,9 +48,8 @@ else:
 # docstring and (BIG) loading from string, sourced from YAML files.
 # -----------------------------------------------------------------------------
 class Test(object):
-    """Base class for all tests
+    """Base class for Tests
 
-    This base-class:
       - Makes the 1st line of a test method's docstring it's description.
       - Warns when a subclass has test methods but is not named like a test.
     """
@@ -144,7 +150,7 @@ class Test(object):
 # -----------------------------------------------------------------------------
 @nottest
 def data_driven_test(test_data_or_file, *, prefix="", suffix=""):
-    """Mark a test as a Data-Driven Test
+    """Mark a test as data-driven and run it for the associated-data.
     """
 
     def decorator(function):
