@@ -153,47 +153,59 @@ def data_driven_test(test_data_or_file, *, prefix="", suffix=""):
     """Mark a test as data-driven and run it for the associated-data.
     """
 
+    def load_test_data():
+        # File-name provided, load test-data from file
+        if isinstance(test_data_or_file, str):
+            # Put all data in the data directory of file folder
+            base_path = dirname(abspath(inspect.getsourcefile(function)))
+            data_file_path = join(base_path, "data", test_data_or_file)
+
+            try:
+                with open(data_file_path) as f:
+                    return yaml.load(f)
+            except Exception as e:
+                raise RuntimeError("Could not load test-data") from e
+        # Test-data provided, use as is
+        else:
+            return test_data_or_file
+
+    def create_partial(function, item, passed_args):
+        description = item.pop("description", None)
+        args = item.pop("args", [])
+        kwargs = item.pop("kwargs", {})
+
+        # Warn about no arguments
+        if not args and not kwargs:
+            warnings.warn("Got no arguments: {!r}".format(description))
+
+        args = list(passed_args) + list(args)
+
+        func = partial(function, *args, **kwargs)
+        if description is not None:
+            func.description = prefix + description + suffix
+
+        return func
+
     def decorator(function):
 
         # Wrapper function
         @wraps(function)
         def wrapper(*passed_args):
-            # File-name provided, load test-data from file
-            if isinstance(test_data_or_file, str):
-                # Put all data in the data directory of file folder
-                base_path = dirname(abspath(inspect.getsourcefile(function)))
-                data_file_path = join(base_path, "data", test_data_or_file)
 
-                try:
-                    with open(data_file_path) as f:
-                        data = yaml.load(f)
-                except Exception as e:
-                    raise RuntimeError("Could not load test-data") from e
-
-            # Test-data provided, use as is
-            else:
-                data = test_data_or_file
+            # Load data inside the test-case
+            data = load_test_data()
 
             seen_descriptions = set()
+            for item in data:
+                func = create_partial(function, item, passed_args)
 
-            for di in data:
-                description = di.pop("description", None)
+                # Warn about duplicate description
+                description = getattr(func, "description", None)
                 if description in seen_descriptions:
                     warnings.warn("Found repeated description: {!r}".format(description))
-
-                args = di.pop("args", [])
-                kwargs = di.pop("kwargs", {})
-                if not args and not kwargs:
-                    warnings.warn("Got no arguments: {!r}".format(description))
-
-                args = list(passed_args) + list(args)
-
-                val = partial(function, *args, **kwargs)
-                if description is not None:
-                    val.description = prefix + description + suffix
-
                 seen_descriptions.add(description)
-                yield val
+
+                yield func
 
         return wrapper
     return decorator
